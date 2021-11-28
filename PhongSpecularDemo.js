@@ -1,5 +1,20 @@
-var templateProgram;
-var templateFragmentShaderScript = `#version 300 es
+var phongProgram;
+var phongFragmentShaderScript = `#version 300 es
+
+    precision highp float;
+
+    uniform vec4 u_color;
+
+    out vec4 out_color;
+
+    void main(void) 
+    {
+        out_color = u_color;
+    }
+`;
+
+var specularProgram;
+var specularFragmentShaderScript = `#version 300 es
 
     precision highp float;
 
@@ -15,14 +30,14 @@ var templateFragmentShaderScript = `#version 300 es
 
 var templateVertexShaderScript = `#version 300 es
 
-    in vec2 a_position; 
+    in vec3 a_position; 
 
     uniform mat4 u_projectionMatrix;
     uniform mat4 u_modelViewMatrix;
 
     void main(void) 
     {
-        gl_Position = u_projectionMatrix * u_modelViewMatrix * vec4(a_position, 0.0, 1.0);
+        gl_Position = u_projectionMatrix * u_modelViewMatrix * vec4(a_position, 1.0);
     }
 `;
 
@@ -33,7 +48,7 @@ var modelViewMatrix = glMatrix.mat4.create();
 
 function initMatrices()
 {
-    glMatrix.mat4.ortho(projectionMatrix, 0, gl.viewportWidth, 0, gl.viewportHeight, -10, 10);
+    glMatrix.mat4.ortho(projectionMatrix, 0, gl.viewportWidth, 0, gl.viewportHeight, -1000, 1000);
     glMatrix.mat4.identity(modelViewMatrix);
 }
 
@@ -58,7 +73,7 @@ function initBuffers()
 
     // How to get data out of the buffer, and bind ARRAY_BUFFER to the attribute
     // Attribute will receive data from that ARRAY_BUFFER
-    var size = 2;
+    var size = 3;
     var type = gl.FLOAT;
     var normalize = false;
     var stride = 0;
@@ -68,37 +83,33 @@ function initBuffers()
 
 function drawScene() 
 {
-    gl.useProgram(templateProgram);
-
-    // Move everything across by 1, 1 each frame
-    glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, glMatrix.vec3.fromValues(1.0, 1.0, 0.0));
-    sendNewMatrices(projectionMatrix, modelViewMatrix);
-
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // Create 50 rectangles of random size, position, color
-    for (var i = 0; i < 50; i++)
-    {
-        sendNewColor([Math.random(), Math.random(), Math.random(), Math.random()]);
+    gl.useProgram(phongProgram);
+    sendNewMatrices(phongProgram, projectionMatrix, modelViewMatrix);
+    sendNewColor(phongProgram, [Math.random(), Math.random(), Math.random(), Math.random()]);
+    var vertices = [
+        100, 100, 0,
+        200, 100, 0,
+        200, 200, 0,
+        100, 200, 0
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    var offset = 0;
+    gl.drawArrays(gl.TRIANGLE_FAN, offset, 4);
 
-        // Copy new data over to buffer on GPU
-        var x = Math.floor(Math.random() * gl.viewportWidth);
-        var y = Math.floor(Math.random() * gl.viewportHeight);
-        var width = Math.floor(Math.random() * 20);
-        var height = Math.floor(Math.random() * 20);
-
-        var vertices = [
-            x,  y,
-            x + width, y,
-            x + width, y + height,
-            x, y + height,
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-        var offset = 0;
-        gl.drawArrays(gl.TRIANGLE_FAN, offset, 4);
-    }
+    gl.useProgram(specularProgram);
+    sendNewMatrices(specularProgram, projectionMatrix, modelViewMatrix);
+    sendNewColor(specularProgram, [Math.random(), Math.random(), Math.random(), Math.random()]);
+    vertices = [
+        300, 100, 0,
+        400, 100, 0,
+        400, 200, 0,
+        300, 200, 0
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.drawArrays(gl.TRIANGLE_FAN, offset, 4);
 }
 
 function tick(now)
@@ -113,14 +124,18 @@ function tick(now)
     requestAnimationFrame(tick);
 }
 
-function templateStart() 
+function demoStart() 
 {
-    var canvas = document.getElementById("template");
+    var canvas = document.getElementById("demo");
     initGl(canvas);
-    templateProgram = createProgram(templateFragmentShaderScript, templateVertexShaderScript);
 
     initMatrices();
-    getLocations();
+
+    phongProgram = createProgram(phongFragmentShaderScript, templateVertexShaderScript);
+    getLocations(phongProgram);
+
+    specularProgram = createProgram(specularFragmentShaderScript, templateVertexShaderScript);
+    getLocations(specularProgram);
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
