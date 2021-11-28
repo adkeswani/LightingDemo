@@ -48,7 +48,7 @@ var modelViewMatrix = glMatrix.mat4.create();
 
 function initMatrices()
 {
-    glMatrix.mat4.ortho(projectionMatrix, 0, gl.viewportWidth, 0, gl.viewportHeight, -1000, 1000);
+    glMatrix.mat4.ortho(projectionMatrix, -gl.viewportWidth / 2, gl.viewportWidth / 2, -gl.viewportHeight / 2, gl.viewportHeight / 2, -1000, 1000);
     glMatrix.mat4.identity(modelViewMatrix);
 }
 
@@ -90,10 +90,10 @@ function drawScene()
     sendNewMatrices(phongProgram, projectionMatrix, modelViewMatrix);
     sendNewColor(phongProgram, [Math.random(), Math.random(), Math.random(), Math.random()]);
     var vertices = [
-        100, 100, 0,
-        200, 100, 0,
-        200, 200, 0,
-        100, 200, 0
+        -150, -50, 0,
+        -50, -50, 0,
+        -50, 50, 0,
+        -150, 50, 0
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     var offset = 0;
@@ -103,25 +103,40 @@ function drawScene()
     sendNewMatrices(specularProgram, projectionMatrix, modelViewMatrix);
     sendNewColor(specularProgram, [Math.random(), Math.random(), Math.random(), Math.random()]);
     vertices = [
-        300, 100, 0,
-        400, 100, 0,
-        400, 200, 0,
-        300, 200, 0
+        50, -50, 0,
+        150, -50, 0,
+        150, 50, 0,
+        50, 50, 0
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     gl.drawArrays(gl.TRIANGLE_FAN, offset, 4);
 }
 
-function tick(now)
+function rotateSquares(key)
 {
-    drawScene();
-    if (lastTime != 0) 
+    switch (key.code)
     {
-        var elapsed = now - lastTime;
+        case 'KeyQ':
+            glMatrix.mat4.rotateX(modelViewMatrix, modelViewMatrix, 0.1);
+            break;
+        case 'KeyW':
+            glMatrix.mat4.rotateX(modelViewMatrix, modelViewMatrix, -0.1);
+            break;
+        case 'KeyA':
+            glMatrix.mat4.rotateY(modelViewMatrix, modelViewMatrix, 0.1);
+            break;
+        case 'KeyS':
+            glMatrix.mat4.rotateY(modelViewMatrix, modelViewMatrix, -0.1);
+            break;
+        case 'KeyZ':
+            glMatrix.mat4.rotateZ(modelViewMatrix, modelViewMatrix, 0.1);
+            break;
+        case 'KeyX':
+            glMatrix.mat4.rotateZ(modelViewMatrix, modelViewMatrix, -0.1);
+            break;
     }
 
-    lastTime = now;
-    requestAnimationFrame(tick);
+    drawScene();
 }
 
 function demoStart() 
@@ -142,5 +157,6 @@ function demoStart()
 
     initBuffers();
 
-    tick();
+    document.addEventListener('keypress', rotateSquares);
+    drawScene();
 }
