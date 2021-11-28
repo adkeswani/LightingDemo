@@ -1,3 +1,5 @@
+//Use https://webgl2fundamentals.org/webgl/lessons/webgl-3d-lighting-directional.html
+
 var phongProgram;
 var phongFragmentShaderScript = `#version 300 es
 
@@ -13,8 +15,8 @@ var phongFragmentShaderScript = `#version 300 es
     }
 `;
 
-var specularProgram;
-var specularFragmentShaderScript = `#version 300 es
+var gouraudProgram;
+var gouraudFragmentShaderScript = `#version 300 es
 
     precision highp float;
 
@@ -99,9 +101,9 @@ function drawScene()
     var offset = 0;
     gl.drawArrays(gl.TRIANGLE_FAN, offset, 4);
 
-    gl.useProgram(specularProgram);
-    sendNewMatrices(specularProgram, projectionMatrix, modelViewMatrix);
-    sendNewColor(specularProgram, [Math.random(), Math.random(), Math.random(), Math.random()]);
+    gl.useProgram(gouraudProgram);
+    sendNewMatrices(gouraudProgram, projectionMatrix, modelViewMatrix);
+    sendNewColor(gouraudProgram, [Math.random(), Math.random(), Math.random(), Math.random()]);
     vertices = [
         50, -50, 0,
         150, -50, 0,
@@ -149,8 +151,8 @@ function demoStart()
     phongProgram = createProgram(phongFragmentShaderScript, templateVertexShaderScript);
     getLocations(phongProgram);
 
-    specularProgram = createProgram(specularFragmentShaderScript, templateVertexShaderScript);
-    getLocations(specularProgram);
+    gouraudProgram = createProgram(gouraudFragmentShaderScript, templateVertexShaderScript);
+    getLocations(gouraudProgram);
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
