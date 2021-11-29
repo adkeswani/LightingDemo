@@ -63,22 +63,3 @@ function createProgram(fragmentShaderScript, vertexShaderScript)
     console.log(gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
 }
-
-function getLocations(program)
-{
-    program.a_position = gl.getAttribLocation(program, "a_position");
-    program.u_projectionMatrix = gl.getUniformLocation(program, "u_projectionMatrix");
-    program.u_modelViewMatrix = gl.getUniformLocation(program, "u_modelViewMatrix");
-    program.u_color = gl.getUniformLocation(program, "u_color");
-}
-
-function sendNewMatrices(program, projectionMatrix, modelViewMatrix)
-{
-    gl.uniformMatrix4fv(program.u_projectionMatrix, false, projectionMatrix);
-    gl.uniformMatrix4fv(program.u_modelViewMatrix, false, modelViewMatrix);
-}
-
-function sendNewColor(program, color)
-{
-    gl.uniform4fv(program.u_color, color);
-}
